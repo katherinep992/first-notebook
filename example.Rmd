@@ -1,0 +1,83 @@
+---
+title: "example1"
+author: "Katherine Parkin"
+date: "2022-12-01"
+output: html_document
+---
+# This is a header
+```{r load-data, message=FALSE}
+library(tidyverse)
+library(kableExtra)
+
+# This is a comment
+# Load the dataset
+
+##################### This is how we processed raw data
+pop_data <- read_csv("data/gapminder_data.csv")
+
+# Create a table with data from European countries in 2007 showing the countries
+# with the largest life expectancy on top
+euro_data_tbl <- pop_data %>%
+                    filter(continent == "Europe" & year == 2007) %>%
+                    select(-continent, -year) %>%
+                    arrange(desc(lifeExp)) %>%
+                    rename("Country" = country, "Population Size" = pop, 
+                           "Life Expectancy" = lifeExp, "GDP" = gdpPercap)
+test <- head(euro_data_tbl)
+
+write.table(test, "./data/test.txt")
+#############################
+
+test2 <- read.table("./data/test.txt")
+
+```
+
+here we have our data set
+
+```{r create-table}
+euro_data_tbl %>%
+  kbl() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+```{r Challenge-1}
+
+#keep on European data and change year to factor
+euro_data_fig <- pop_data %>% 
+                    filter(continent == "Europe")  %>% 
+                    mutate(year=as_factor(year))
+
+#keep only United Kingdom data and change year to factor
+uk_data_fig <- pop_data %>%
+                    filter(country == "United Kingdom") %>%
+                    mutate(year=as_factor(year))
+```
+
+```{r}
+paged_table(euro_data_tbl)
+```
+
+
+```{r}
+#Euro plot
+euro_plot <- euro_data_fig %>%
+                ggplot(mapping=aes(x=year, y=lifeExp)) +
+                geom_violin() +
+                stat_summary(fun.y = median, geom = "point")
+
+#draw euro plot
+euro_plot
+```
+
+\  
+
+```{r}
+#UK plot
+uk_plot <- uk_data_fig %>%
+                ggplot(mapping=aes(x=year, y=lifeExp)) +
+                geom_point()
+
+#draw euro plot next to UK plot
+ggarrange(euro_plot, uk_plot, ncol=2, nrow=1, labels="AUTO")
+```
+
